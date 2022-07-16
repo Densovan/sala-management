@@ -35,7 +35,7 @@ async fn main() -> std::io::Result<()> {
    let port = dotenv::var("PORT").unwrap();
    let address = format!("{}:{}", ip, port);
 
-//    let pool = db_pool().await.unwrap();
+   let _pool = db_pool().await.unwrap();
 
    println!("Server is running at: http://{}", &address);
     println!("GraphQL is running at: http://{}/api", &address);
@@ -43,11 +43,14 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(move || {
         App::new()
-            .app_data(db_pool.clone())
+            .app_data(_pool.clone())
             .wrap(
                 Cors::default()
                     .allow_any_origin()
                     .allowed_methods(vec!["POST","GET"])
+                    .allow_any_header()
+                    .supports_credentials()
+                    .max_age(3600),
             )
             .service(hello)
             .service(echo)

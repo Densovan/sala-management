@@ -7,7 +7,7 @@ pub async fn db_pool() -> Result<Client, Error> {
     let db = dotenv::var("MONGOURI").unwrap();
 
     let db_address = format!(
-        "Mongodb{}",db = db,
+        "{}",db = db,
     );
 
     let mut client_options = ClientOptions::parse(&db_address).await?;
@@ -20,5 +20,6 @@ pub async fn db_pool() -> Result<Client, Error> {
             Ok(c)
         }
         Err(e) => Err(e),
+        
     }
 }
