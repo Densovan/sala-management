@@ -4,7 +4,8 @@ use database::db_pool;
 //Libray Import 
 use actix_cors::Cors;
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
-
+extern crate colored;
+use colored::*;
 
 #[get("/")]
 async fn hello() -> impl Responder {
@@ -37,8 +38,8 @@ async fn main() -> std::io::Result<()> {
 
    let _pool = db_pool().await.unwrap();
 
-   println!("Server is running at: http://{}", &address);
-    println!("GraphQL is running at: http://{}/api", &address);
+   println!("{}{}","Server is running at: http://".red().on_blue(), &address.red().on_blue());
+    println!("{}{}{}","GraphQL is running at: http://".green().on_bright_cyan(), &address.green().on_bright_cyan(), "/api".green().on_bright_cyan());
 
 
     HttpServer::new(move || {

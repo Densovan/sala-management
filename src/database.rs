@@ -1,3 +1,6 @@
+extern crate colored;
+use colored::*;
+
 use mongodb::{error::Error, options::ClientOptions, Client};
 
 pub async fn db_pool() -> Result<Client, Error> {
@@ -16,7 +19,12 @@ pub async fn db_pool() -> Result<Client, Error> {
 
     match client {
         Ok(c) => {
-            println!("Connected to database.");
+            println!("{}","Connected to database".green().on_bright_green());
+//             println!("{} {} {}",
+//             "this is blue".blue(),
+//             "this is red on blue".red().on_blue(),
+//             "this is yellow and bold".yellow().bold()
+//  );
             Ok(c)
         }
         Err(e) => Err(e),
