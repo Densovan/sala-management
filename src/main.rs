@@ -5,7 +5,9 @@ pub mod models;
 
 //Libray Import
 use actix_cors::Cors;
-use actix_web::{get, post, route, web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{
+    get, middleware::Logger, post, route, web, App, HttpResponse, HttpServer, Responder,
+};
 extern crate colored;
 use actix_web_lab::respond::Html;
 use async_graphql::{
@@ -17,12 +19,15 @@ use colored::*;
 
 //Local imports
 use crate::graphql::MainSchema;
+// use crate::models::user::UserGQL;
 use database::db_pool;
 use graphql::{RootMutation, RootQuery};
 // use handler::{gql_playgound, index};
+// use mongodb::{options::ClientOptions, Client};
+// use std::sync::*;
 
 //======================**GraphQL endpoint**=======================
-#[route("/graphql", method = "GET", method = "POST")]
+#[route("/graphql", method = "POST")]
 async fn graphqls(schema: web::Data<MainSchema>, req: GraphQLRequest) -> GraphQLResponse {
     schema.execute(req.into_inner()).await.into()
 }
@@ -50,7 +55,13 @@ async fn manual_hello() -> impl Responder {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    // std::env::set_var("RUST_LOG", "actix_web=debug");
+    std::env::set_var("RUST_LOG", "actix_web=debug");
+
+    // let mut client_options = ClientOptions::parse("mongodb+srv://den:sarimsovanden9999086280018@blogs.eqoih.mongodb.net/rusttest?retryWrites=true&w=majority").await.unwrap();
+    // client_options.app_name = Some("PlantApi".to_string());
+    // let client = web::Data::new(Mutex::new(Client::with_options(client_options).unwrap()));
+
+    env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
     // let mut client_options = ClientOptions::parse("mongouri").await.unwrap();
     // client_options.app_name = Some("salaManagement".to_string());
     // let client = web::Data::new(Mutex::new(Client::with_options(client_options).unwrap()));
@@ -71,31 +82,29 @@ async fn main() -> std::io::Result<()> {
         "{}{}{}",
         "GraphQL is running at: http://".green().on_bright_cyan(),
         &address.green().on_bright_cyan(),
-        "/api".green().on_bright_cyan()
+        "/graphiql".green().on_bright_cyan()
     );
 
-    let schema = Schema::build(RootQuery, RootMutation, EmptySubscription).finish();
+    let schema = Schema::build(RootQuery, RootMutation, EmptySubscription)
+        // .data(App)
+        .finish();
 
     HttpServer::new(move || {
         App::new()
-            .app_data(schema.clone())
+            .app_data(web::Data::new(schema.clone()))
             .app_data(_pool.clone())
-            .wrap(
-                Cors::default()
-                    .allow_any_origin()
-                    .allowed_methods(vec!["POST", "GET"])
-                    .allow_any_header()
-                    .supports_credentials()
-                    .max_age(3600),
-            )
-            .service(hello)
-            .service(echo)
+            // .app_data(client.clone())
+            .wrap(Cors::permissive())
+            .wrap(Logger::default())
+            // .service(hello)
+            // .service(echo)
             .service(graphqls)
             .service(graphql_playground)
             // .service(web::resource("/api").guard(guard::Post()).to(index))
             // .service(web::resource("/api").guard(guard::Get()).to(gql_playgound))
             .route("/hey", web::get().to(manual_hello))
     })
+    .workers(2)
     .bind(&address)?
     .run()
     .await

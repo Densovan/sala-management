@@ -12,8 +12,9 @@ actix-cors = "0.6.1"
 actix-rt = "2.7.0"
 actix-web-lab = "0.16"
 # Database
-mongodb = "2"
+mongodb = "2.2.2"
 serde ={version= "1.0.139", feature=["derive"]}
+serde_json = "*"
 bson = "2.3.0"
 futures = "0.3.5"
 
@@ -24,10 +25,13 @@ bcrypt = "0.13.0"
 
 # Dev
 listenfd ="1.0.0"
+env_logger = "0.9"
+log = "0.4"
+slab = "0.4"
 
 #Style
 colored ="2"
 
 #GraphQL
-async-graphql = "4.0.4"
-async-graphql-actix-web = "4.0.4"
+async-graphql = "4.0.0"
+async-graphql-actix-web = "4.0.0"

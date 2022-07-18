@@ -1,7 +1,7 @@
 // use actix_web::HttpResponse;
 //Libray Imports
 extern crate async_graphql;
-use async_graphql::ID;
+// use async_graphql::ID;
 use async_graphql::*;
 
 // use async_graphql::validators::{max_length};
@@ -44,8 +44,10 @@ impl RootMutation {
             "gender":gender.to_string(),
             "phone":phone.to_string(),
         };
+        #[allow(unused_assignments)]
         let mut _new_user_id: String = String::from("");
         let result = collection.insert_one(new_user, None).await;
+        println!("{:#?}", result);
         match result {
             Ok(data) => {
                 let results = data.inserted_id.as_object_id();

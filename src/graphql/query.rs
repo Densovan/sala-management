@@ -23,7 +23,6 @@ impl RootQuery {
             match result {
                 Ok(document) => {
                     let u: UserModel = bson::from_bson(Bson::Document(document))?;
-
                     data.push(u.to_norm());
                 }
                 Err(e) => return Err(e.into()),
@@ -35,5 +34,9 @@ impl RootQuery {
             false => Ok(data),
         }
     }
-    // pub async fn user_by_id(&self, id: &str) -> Option<UserGQL>
+
+    async fn value(&self) -> i32 {
+        // A GraphQL Object type must define one or more fields.
+        100
+    }
 }
