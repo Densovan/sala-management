@@ -1901,6 +1901,7 @@ dependencies = [
  "log",
  "mongodb",
  "serde",
+ "serde_derive",
  "serde_json",
  "slab",
 ]

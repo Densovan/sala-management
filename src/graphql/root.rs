@@ -1,14 +1,14 @@
 //Libray imports
 use async_graphql::{EmptySubscription, Schema};
 use mongodb::Client;
-use serde::{Deserialize, Serialize};
+use serde_derive::{Deserialize, Serialize};
 
 //Local import
 use crate::graphql::{RootMutation, RootQuery};
 
 pub type MainSchema = Schema<RootQuery, RootMutation, EmptySubscription>;
 
-// pub struct Token(pub String);
+pub struct Token(pub String);
 
 pub struct AppContext {
     pub db_pool: Client,

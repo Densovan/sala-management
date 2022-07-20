@@ -13,7 +13,7 @@ pub struct RootQuery;
 #[Object]
 impl RootQuery {
     pub async fn users(&self, ctx: &Context<'_>) -> FieldResult<Vec<UserGQL>> {
-        let db = ctx.data_unchecked::<AppContext>().db_pool.to_owned();
+        let db = ctx.data_unchecked::<AppContext>().db_pool.clone();
         let collection = db.database("rusttest").collection("users");
         let mut data: Vec<UserGQL> = Vec::new();
         let mut cursor = collection.find(None, None).await?;
