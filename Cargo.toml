@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 # Server
-actix-web = "4"
+actix-web = "^4"
 actix-cors = "0.6.1"
 actix-rt = "2.7.0"
 actix-web-lab = "0.16"

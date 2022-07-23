@@ -1,27 +1,18 @@
-//Libray Imports
-
-// use crate::service::user;
 use async_graphql::*;
 use bcrypt::{hash, verify};
-use chrono::prelude::*;
 use dotenv::dotenv;
-use mongodb::bson::doc;
+
+use mongodb::bson::{doc};
 use std::env;
 
 //MODELS
 use super::AppContext;
 use super::{Claims, RootQuery};
-use crate::models::user::UserGQL;
-use chrono::{Duration, Utc};
-use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
-pub struct RootMutation;
 
-// pub fn create_jwt(uid: &str) -> Result<String> {
-//     let expiration = Utc::now()
-//         .checked_add_signed(chrono::Duration::seconds(60))
-//         .expect("valid timestamp")
-//         .timestamp();
-// }
+use crate::models::{user::UserGQL};
+use crate::utils::{ message::Message };
+use jsonwebtoken::{encode, EncodingKey, Header};
+pub struct RootMutation;
 
 #[Object]
 impl RootMutation {
@@ -109,5 +100,40 @@ impl RootMutation {
             },
             Err(e) => Err(FieldError::from(e)),
         }
+    }
+
+    pub async fn create_session(
+        &self,
+        ctx: &Context<'_>,
+        room_id: String,
+        lesson_id: String,
+    ) -> FieldResult<Message> {
+
+        dotenv().ok();
+
+        let db = ctx.data_unchecked::<AppContext>().db_pool.clone();
+        let collection = db.database("rusttest").collection("sessions");
+
+        let new_session = doc! {
+            "room_id": room_id.to_string(),
+            "lesson_id": lesson_id.to_string(),
+        };
+
+        // #[allow(unused_assignments)]
+        let mut _new_session: String = String::from("");
+        let result = collection.insert_one(new_session, None).await;
+        // let result = collection.insert_one(new_section, None).await.expect("Error Insert!");
+        println!("{:#?}", _new_session);
+
+        match result {
+            Ok(data) => {
+                let results = data.inserted_id.as_object_id();
+                _new_session = results.unwrap().to_string();
+            }
+            Err(err) => {
+                println!("{:?}", err)
+            }
+        }
+        Ok(Message{message: String::from("Create session successfully!")})
     }
 }
