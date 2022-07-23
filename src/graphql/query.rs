@@ -7,7 +7,10 @@ use mongodb::bson::{doc, Bson};
 
 // MODELS
 use super::AppContext;
-use crate::models::user::{UserGQL, UserModel};
+use crate::models::{
+    classroom::{ClassroomGQL, ClassroomModel},
+    user::{UserGQL, UserModel},
+};
 pub struct RootQuery;
 
 #[Object]
@@ -89,6 +92,40 @@ impl RootQuery {
         match user.email.to_string() == "".to_string() {
             true => Err(FieldError::from("User not found")),
             false => Ok(user.to_norm()),
+        }
+    }
+
+    //=====================>Classroom Section<<=======================
+    pub async fn classroom_by_id(
+        &self,
+        ctx: &Context<'_>,
+        id: String,
+    ) -> FieldResult<ClassroomGQL> {
+        let db = ctx.data_unchecked::<AppContext>().db_pool.clone();
+        let collection = db.database("rusttest").collection("classrooms");
+
+        //
+
+        let converted_id = match bson::oid::ObjectId::parse_str(&id) {
+            Ok(data) => data,
+            Err(_) => return Err(FieldError::from("Not a valid id")),
+        };
+
+        let cursor = collection
+            .find_one(doc! {"_id": converted_id}, None)
+            .await
+            .unwrap_or(None);
+
+        let mut classroom: ClassroomModel = ClassroomModel::new();
+
+        for doc in cursor {
+            classroom = bson::from_bson(Bson::Document(doc))?;
+        }
+
+        //return data
+        match classroom._id.to_string() == "".to_string() {
+            true => Err(FieldError::from("User not found")),
+            false => Ok(classroom.to_norm()),
         }
     }
 }

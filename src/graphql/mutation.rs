@@ -3,24 +3,23 @@
 // use crate::service::user;
 use async_graphql::*;
 use bcrypt::{hash, verify};
-use chrono::prelude::*;
+use bson::{doc, Bson};
 use dotenv::dotenv;
-use mongodb::bson::doc;
 use std::env;
 
 //MODELS
 use super::AppContext;
 use super::{Claims, RootQuery};
+use crate::models::classroom::{ClassroomGQL, ClassroomModel};
 use crate::models::user::UserGQL;
-use chrono::{Duration, Utc};
-use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
+use jsonwebtoken::{encode, EncodingKey, Header};
 pub struct RootMutation;
 
 // pub fn create_jwt(uid: &str) -> Result<String> {
 //     let expiration = Utc::now()
 //         .checked_add_signed(chrono::Duration::seconds(60))
-//         .expect("valid timestamp")
-//         .timestamp();
+//         .expect("valid date")
+//         .date();
 // }
 
 #[Object]
@@ -84,11 +83,11 @@ impl RootMutation {
         password: String,
     ) -> FieldResult<String> {
         dotenv().ok();
-        // let my_iat = Utc::now().timestamp();
+        // let my_iat = Utc::now().date();
         // let my_exp = Utc::now()
         //     .checked_add_signed(Duration::seconds(5))
-        //     .expect("invalid timestamp")
-        //     .timestamp();
+        //     .expect("invalid date")
+        //     .date();
         match RootQuery.user_by_email(ctx, email).await {
             Ok(data) => match verify(password, &data.password).unwrap() {
                 true => {
@@ -108,6 +107,77 @@ impl RootMutation {
                 false => Err(FieldError::from("Invalid password")),
             },
             Err(e) => Err(FieldError::from(e)),
+        }
+    }
+
+    //========================>>ClassRoom Section<<============================
+    pub async fn create_class_room(
+        &self,
+        ctx: &Context<'_>,
+        name: String,
+        school_id: String,
+    ) -> FieldResult<ClassroomGQL> {
+        let db = ctx.data_unchecked::<AppContext>().db_pool.clone();
+        let collection = db.database("rusttest").collection("classrooms");
+
+        let new_class_room = doc! {
+            "name":name.to_string(),
+            "school_id":school_id.to_string(),
+            "date":bson::DateTime::now()
+        };
+        #[allow(unused_assignments)]
+        let mut _new_user_id: String = String::from("");
+        let result = collection.insert_one(new_class_room, None).await;
+        println!("{:#?}", result);
+        match result {
+            Ok(data) => {
+                let results = data.inserted_id.as_object_id();
+                _new_user_id = results.unwrap().to_string();
+            }
+            Err(err) => {
+                println!("{:?}", err)
+            }
+        }
+        Ok(ClassroomGQL {
+            id: ID::from("001"),
+            name,
+            school_id,
+            date: String::from(""),
+            message: String::from("successfully"),
+        })
+    }
+
+    pub async fn update_classroom(
+        &self,
+        ctx: &Context<'_>,
+        id: String,
+        name: String,
+    ) -> FieldResult<ClassroomGQL> {
+        let db = ctx.data_unchecked::<AppContext>().db_pool.clone();
+        let collection = db.database("rusttest").collection("classrooms");
+
+        let converted_id = match bson::oid::ObjectId::parse_str(&id) {
+            Ok(data) => data,
+            Err(_) => return Err(FieldError::from("Not a valid id")),
+        };
+
+        let cursor = collection
+            .find_one_and_update(
+                doc! {"_id":converted_id},
+                doc! {"$set": {"name":name.clone()}},
+                None,
+            )
+            .await?;
+
+        let mut classroom: ClassroomModel = ClassroomModel::new();
+
+        for doc in cursor {
+            classroom = bson::from_bson(Bson::Document(doc))?;
+        }
+        //return data
+        match classroom._id.to_string() == "".to_string() {
+            true => Err(FieldError::from("id not found")),
+            false => Ok(classroom.to_norm()),
         }
     }
 }
