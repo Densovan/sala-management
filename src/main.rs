@@ -82,7 +82,7 @@ async fn main() -> std::io::Result<()> {
         "{}{}{}",
         "GraphQL is running at: http://".green().on_bright_cyan(),
         &address.green().on_bright_cyan(),
-        "/graphiql".green().on_bright_cyan()
+        "/api".green().on_bright_cyan()
     );
 
     let schema = Schema::build(RootQuery, RootMutation, EmptySubscription)

@@ -11,6 +11,7 @@ actix-web = "4"
 actix-cors = "0.6.1"
 actix-rt = "2.7.0"
 actix-web-lab = "0.16"
+
 # Database
 mongodb = "2.2.2"
 serde ={version= "1.0.139", feature=["derive"]}
@@ -23,16 +24,18 @@ serde_derive = "1.0.118"
 dotenv = "0.15.0"
 jsonwebtoken = "8.1.1"
 bcrypt = "0.13.0"
+chrono = "0.4.19"
 
 # Dev
 listenfd ="1.0.0"
 env_logger = "0.9"
 log = "0.4"
 slab = "0.4"
+validator = { version = "0.15", features = ["derive"] }
 
 #Style
 colored ="2"
 
 #GraphQL
-async-graphql = "4.0.0"
-async-graphql-actix-web = "4.0.0"
+async-graphql = "4.0.5"
+async-graphql-actix-web = "4.0.5"

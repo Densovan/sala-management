@@ -1,12 +1,16 @@
 use async_graphql::ID;
-use bson::{self, doc, oid::ObjectId, Bson, Document};
+use bson::Bson;
+use bson::{self, doc, oid::ObjectId, Document};
 use serde::{Deserialize, Serialize};
+use validator::Validate;
 
 // ============================**Mongo Model**==============================
-#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize, Validate)]
+
 pub struct UserModel {
     pub _id: ObjectId,
     pub fullname: String,
+    #[validate(email)]
     pub email: String,
     pub password: String,
     pub phone: String,
@@ -37,7 +41,8 @@ impl UserGQL {
         }
     }
     pub fn to_bson_doc(&self) -> Document {
-        // let converted_id = bson::oid::ObjectId::String(&self.id.to_string()).unwrap();
+        // let converted_id = bson::oid::ObjectId::with_string(&self.id.to_string()).unwrap();
+
         let converted_id = Bson::String(self.id.to_string());
         doc! {
             "_id": converted_id,

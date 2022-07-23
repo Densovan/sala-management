@@ -1,9 +1,9 @@
 // Library imports
-use async_graphql::{Context, FieldResult, Object};
+use async_graphql::{Context, FieldError, FieldResult, Object};
 use bson;
 #[allow(unused_imports)]
 use futures::{lock::Mutex, stream::StreamExt};
-use mongodb::bson::Bson;
+use mongodb::bson::{doc, Bson};
 
 // MODELS
 use super::AppContext;
@@ -12,6 +12,8 @@ pub struct RootQuery;
 
 #[Object]
 impl RootQuery {
+    // =====================>>user section <<====================
+
     pub async fn users(&self, ctx: &Context<'_>) -> FieldResult<Vec<UserGQL>> {
         let db = ctx.data_unchecked::<AppContext>().db_pool.clone();
         let collection = db.database("rusttest").collection("users");
@@ -35,8 +37,58 @@ impl RootQuery {
         }
     }
 
-    async fn value(&self) -> i32 {
-        // A GraphQL Object type must define one or more fields.
-        100
+    // get user by ID public
+
+    pub async fn user_by_id(&self, ctx: &Context<'_>, id: String) -> FieldResult<UserGQL> {
+        let db = ctx.data_unchecked::<AppContext>().db_pool.clone();
+        let collection = db.database("rusttest").collection("users");
+
+        let converted_id = match bson::oid::ObjectId::parse_str(&id) {
+            Ok(data) => data,
+            Err(_) => return Err(FieldError::from("Not a valid id")),
+        };
+
+        //create query
+
+        let cursor = collection
+            .find_one(doc! {"_id": converted_id}, None)
+            .await
+            .unwrap_or(None);
+
+        let mut user: UserModel = UserModel::new();
+
+        for doc in cursor {
+            user = bson::from_bson(Bson::Document(doc))?;
+        }
+
+        //return data
+        match user._id.to_string() == "".to_string() {
+            true => Err(FieldError::from("User not found")),
+            false => Ok(user.to_norm()),
+        }
+    }
+
+    //user by email
+
+    pub async fn user_by_email(&self, ctx: &Context<'_>, email: String) -> FieldResult<UserGQL> {
+        let db = ctx.data_unchecked::<AppContext>().db_pool.clone();
+        let collection = db.database("rusttest").collection("users");
+
+        let cursor = collection
+            .find_one(doc! {"email": email}, None)
+            .await
+            .unwrap_or(None);
+
+        let mut user: UserModel = UserModel::new();
+
+        for doc in cursor {
+            user = bson::from_bson(Bson::Document(doc))?;
+        }
+
+        //return data
+        match user.email.to_string() == "".to_string() {
+            true => Err(FieldError::from("User not found")),
+            false => Ok(user.to_norm()),
+        }
     }
 }
