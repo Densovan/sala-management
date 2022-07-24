@@ -30,7 +30,7 @@ pub struct UserGQL {
 
 //=========================**Base Implementation**==================================
 impl UserGQL {
-    pub fn new() -> Self {
+    pub fn _new() -> Self {
         UserGQL {
             id: ID::from(""),
             fullname: String::from(""),
@@ -40,7 +40,7 @@ impl UserGQL {
             gender: String::from(""),
         }
     }
-    pub fn to_bson_doc(&self) -> Document {
+    pub fn _to_bson_doc(&self) -> Document {
         // let converted_id = bson::oid::ObjectId::with_string(&self.id.to_string()).unwrap();
 
         let converted_id = Bson::String(self.id.to_string());

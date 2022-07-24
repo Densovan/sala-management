@@ -24,7 +24,7 @@ pub struct ClassroomGQL {
 
 //=========================**Base Implementation**==================================
 impl ClassroomGQL {
-    pub fn new() -> Self {
+    pub fn _new() -> Self {
         ClassroomGQL {
             id: ID::from(""),
             school_id: String::from(""),
@@ -33,7 +33,7 @@ impl ClassroomGQL {
             message: String::from(""),
         }
     }
-    pub fn to_bson_doc(&self) -> Document {
+    pub fn _to_bson_doc(&self) -> Document {
         let converted_id = Bson::String(self.id.to_string());
         doc! {
             "_id": converted_id,

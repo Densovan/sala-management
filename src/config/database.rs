@@ -8,7 +8,7 @@ pub async fn db_pool() -> Result<Client, Error> {
 
     let db = dotenv::var("MONGOURI").unwrap();
 
-    let db_address = format!("{}", db = db,);
+    let db_address = format!("{}", db);
 
     let mut client_options = ClientOptions::parse(&db_address).await?;
     client_options.retry_writes = Some(false);

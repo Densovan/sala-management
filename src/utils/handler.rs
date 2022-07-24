@@ -5,10 +5,10 @@ use async_graphql_actix_web::{GraphQLRequest, GraphQLResponse};
 use mongodb::Client;
 
 // Local imports
-use crate::graphql::{AppContext, MainSchema, Token};
+use crate::graphql::{AppContext, BuildSchema, Token};
 pub async fn index(
     pool: web::Data<Client>,
-    schema: web::Data<MainSchema>,
+    schema: web::Data<BuildSchema>,
     req: HttpRequest,
     gql_request: GraphQLRequest,
 ) -> GraphQLResponse {
@@ -33,7 +33,7 @@ pub async fn index(
     schema.execute(request).await.into()
 }
 
-pub async fn gql_playgound() -> HttpResponse {
+pub async fn gql_playground() -> HttpResponse {
     //  Response playground service
     HttpResponse::Ok()
         .content_type("text/html; charset=utf-8")

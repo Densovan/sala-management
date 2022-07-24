@@ -4,4 +4,5 @@ mod root;
 
 pub use mutation::RootMutation;
 pub use query::RootQuery;
-pub use root::{AppContext, Claims, MainSchema, Token};
+pub use root::{AppContext, Claims, BuildSchema, Token};
+
