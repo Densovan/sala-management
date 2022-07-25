@@ -59,7 +59,7 @@ impl ClassroomModel {
             school_id: self.school_id.to_owned(),
             name: self.name.to_owned(),
             date: self.date.to_owned().to_string(),
-            message: String::from(""),
+            message: String::from("successfully"),
         }
     }
 }
@@ -80,6 +80,6 @@ impl ClassroomGQL {
         &self.school_id
     }
     async fn message(&self) -> &str {
-        &&self.message
+        &self.message
     }
 }

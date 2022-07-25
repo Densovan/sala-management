@@ -9,15 +9,9 @@ use super::AppContext;
 use super::{Claims, RootQuery};
 use crate::models::classroom::{ClassroomGQL, ClassroomModel};
 use crate::models::user::UserGQL;
+// use crate::utils::message::Message;
 use jsonwebtoken::{encode, EncodingKey, Header};
 pub struct RootMutation;
-
-// pub fn create_jwt(uid: &str) -> Result<String> {
-//     let expiration = Utc::now()
-//         .checked_add_signed(chrono::Duration::seconds(60))
-//         .expect("valid date")
-//         .date();
-// }
 
 #[Object]
 impl RootMutation {
@@ -123,13 +117,13 @@ impl RootMutation {
             "date":bson::DateTime::now()
         };
         #[allow(unused_assignments)]
-        let mut _new_user_id: String = String::from("");
+        let mut _class_id: String = String::from("");
         let result = collection.insert_one(new_class_room, None).await;
         println!("{:#?}", result);
         match result {
             Ok(data) => {
                 let results = data.inserted_id.as_object_id();
-                _new_user_id = results.unwrap().to_string();
+                _class_id = results.unwrap().to_string();
             }
             Err(err) => {
                 println!("{:?}", err)
@@ -177,4 +171,22 @@ impl RootMutation {
             false => Ok(classroom.to_norm()),
         }
     }
+
+    // pub async fn delete_room(&self, ctx: &Context<'_>, id: String) -> FieldResult<String> {
+    //     let db = ctx.data_unchecked::<AppContext>().db_pool.clone();
+    //     let collection = db.database("rusttest").collection("classrooms");
+    //     let converted_id = match bson::oid::ObjectId::parse_str(&id) {
+    //         Ok(data) => data,
+    //         Err(_) => return Err(FieldError::from("Not a valid id")),
+    //     };
+    //     let cursor = collection
+    //         .delete_one(doc! { "_id": converted_id }, None)
+    //         .await
+    //         .unwrap();
+    //     println!("{:?}", cursor.deleted_count);
+    //     match cursor.deleted_count {
+    //         1 => Ok(String::from("User deleted")),
+    //         _ => Err(FieldError::from("User not delete")),
+    //     }
+    // }
 }
