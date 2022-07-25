@@ -128,4 +128,9 @@ impl RootQuery {
             false => Ok(classroom.to_norm()),
         }
     }
+
+    // pub async fn class_rooms(&self, ctx: &Context<'_>) -> FieldResult<Vec<ClassroomGQL>> {
+    //     let db = ctx.data_unchecked::<AppContext>().db_pool.clone();
+    //     let collection = db.database("rusttest").collection("classrooms");
+    // }
 }

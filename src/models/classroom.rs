@@ -19,7 +19,7 @@ pub struct ClassroomGQL {
     pub school_id: String,
     pub name: String,
     pub date: String,
-    pub message: String,
+    // pub message: String,
 }
 
 //=========================**Base Implementation**==================================
@@ -30,7 +30,7 @@ impl ClassroomGQL {
             school_id: String::from(""),
             name: String::from(""),
             date: String::from(""),
-            message: String::from(""),
+            // message: String::from(""),
         }
     }
     pub fn _to_bson_doc(&self) -> Document {
@@ -39,6 +39,7 @@ impl ClassroomGQL {
             "_id": converted_id,
             "name":self.name.to_owned(),
             "date":self.date.to_owned(),
+            // "message":self.message.to_owned(),
         }
     }
 }
@@ -59,7 +60,7 @@ impl ClassroomModel {
             school_id: self.school_id.to_owned(),
             name: self.name.to_owned(),
             date: self.date.to_owned().to_string(),
-            message: String::from("successfully"),
+            // message: String::from("successfully"),
         }
     }
 }
@@ -79,7 +80,7 @@ impl ClassroomGQL {
     async fn school_id(&self) -> &str {
         &self.school_id
     }
-    async fn message(&self) -> &str {
-        &self.message
-    }
+    // async fn message(&self) -> &str {
+    //     &self.message
+    // }
 }

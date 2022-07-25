@@ -134,7 +134,7 @@ impl RootMutation {
             name,
             school_id,
             date: String::from(""),
-            message: String::from("successfully"),
+            // message: String::from("successfully"),
         })
     }
 
@@ -172,21 +172,25 @@ impl RootMutation {
         }
     }
 
-    // pub async fn delete_room(&self, ctx: &Context<'_>, id: String) -> FieldResult<String> {
-    //     let db = ctx.data_unchecked::<AppContext>().db_pool.clone();
-    //     let collection = db.database("rusttest").collection("classrooms");
-    //     let converted_id = match bson::oid::ObjectId::parse_str(&id) {
-    //         Ok(data) => data,
-    //         Err(_) => return Err(FieldError::from("Not a valid id")),
-    //     };
-    //     let cursor = collection
-    //         .delete_one(doc! { "_id": converted_id }, None)
-    //         .await
-    //         .unwrap();
-    //     println!("{:?}", cursor.deleted_count);
-    //     match cursor.deleted_count {
-    //         1 => Ok(String::from("User deleted")),
-    //         _ => Err(FieldError::from("User not delete")),
-    //     }
-    // }
+    pub async fn delete_room(&self, ctx: &Context<'_>, id: String) -> FieldResult<String> {
+        let db = ctx.data_unchecked::<AppContext>().db_pool.clone();
+        let collection = db.database("rusttest").collection("classrooms");
+        let converted_id = match bson::oid::ObjectId::parse_str(&id) {
+            Ok(data) => data,
+            Err(_) => return Err(FieldError::from("Not a valid id")),
+        };
+        let cursor = collection
+            .find_one_and_delete(doc! { "_id": converted_id }, None)
+            .await?;
+
+        let mut classroom: ClassroomModel = ClassroomModel::new();
+        for doc in cursor {
+            classroom = bson::from_bson(Bson::Document(doc))?;
+        }
+        //return data
+        match classroom._id.to_string() == "".to_string() {
+            false => Ok(String::from(" deleted successfully")),
+            true => Err(FieldError::from("Room not delete")),
+        }
+    }
 }
