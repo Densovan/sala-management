@@ -107,6 +107,7 @@ impl RootMutation {
         ctx: &Context<'_>,
         name: String,
         school_id: String,
+        user_id: String,
     ) -> FieldResult<ClassroomGQL> {
         let db = ctx.data_unchecked::<AppContext>().db_pool.clone();
         let collection = db.database("rusttest").collection("classrooms");
@@ -114,7 +115,8 @@ impl RootMutation {
         let new_class_room = doc! {
             "name":name.to_string(),
             "school_id":school_id.to_string(),
-            "date":bson::DateTime::now()
+            "date":bson::DateTime::now(),
+            "user_id":user_id.to_string(),
         };
         #[allow(unused_assignments)]
         let mut _class_id: String = String::from("");
@@ -133,6 +135,7 @@ impl RootMutation {
             id: ID::from("001"),
             name,
             school_id,
+            user_id,
             date: String::from(""),
             // message: String::from("successfully"),
         })
@@ -143,6 +146,8 @@ impl RootMutation {
         ctx: &Context<'_>,
         id: String,
         name: String,
+        user_id: String,
+        school_id: String,
     ) -> FieldResult<ClassroomGQL> {
         let db = ctx.data_unchecked::<AppContext>().db_pool.clone();
         let collection = db.database("rusttest").collection("classrooms");
@@ -155,7 +160,7 @@ impl RootMutation {
         let cursor = collection
             .find_one_and_update(
                 doc! {"_id":converted_id},
-                doc! {"$set": {"name":name.clone()}},
+                doc! {"$set": {"name":name.clone() , "school_id":school_id.clone(),"user_id":user_id.clone()}},
                 None,
             )
             .await?;
@@ -189,7 +194,7 @@ impl RootMutation {
         }
         //return data
         match classroom._id.to_string() == "".to_string() {
-            false => Ok(String::from(" deleted successfully")),
+            false => Ok(String::from("deleted successfully")),
             true => Err(FieldError::from("Room not delete")),
         }
     }

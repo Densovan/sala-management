@@ -1,10 +1,11 @@
 // Library imports
-use async_graphql::{Context, FieldError, FieldResult, Object};
-use bson;
+use async_graphql::{Context, Error, ErrorExtensions, FieldError, FieldResult, Object};
+// use async_graphql::*;
+use bson::{self, from_document};
 #[allow(unused_imports)]
 use futures::{lock::Mutex, stream::StreamExt};
 use mongodb::bson::{doc, Bson};
-
+// use std::io::Error;
 // MODELS
 use super::AppContext;
 use crate::models::{
@@ -104,33 +105,60 @@ impl RootQuery {
         let db = ctx.data_unchecked::<AppContext>().db_pool.clone();
         let collection = db.database("rusttest").collection("classrooms");
 
-        //
-
         let converted_id = match bson::oid::ObjectId::parse_str(&id) {
             Ok(data) => data,
             Err(_) => return Err(FieldError::from("Not a valid id")),
         };
 
-        let cursor = collection
-            .find_one(doc! {"_id": converted_id}, None)
-            .await
-            .unwrap_or(None);
+        let cursor = collection.find_one(doc! {"_id": converted_id}, None).await;
 
-        let mut classroom: ClassroomModel = ClassroomModel::new();
-
-        for doc in cursor {
-            classroom = bson::from_bson(Bson::Document(doc))?;
+        if let Ok(exist_classroom) = cursor {
+            if let Some(attendant_document) = exist_classroom {
+                let attendant: ClassroomModel = from_document(attendant_document)?;
+                Ok(attendant.to_norm())
+            } else {
+                Err(Error::new("Room not found")
+                    .extend_with(|err, eev| eev.set("details", err.message.as_str())))
+            }
+        } else {
+            Err(Error::new("Error searching mongodb")
+                .extend_with(|err, eev| eev.set("details", err.message.as_str())))
         }
 
-        //return data
-        match classroom._id.to_string() == "".to_string() {
-            true => Err(FieldError::from("User not found")),
-            false => Ok(classroom.to_norm()),
-        }
+        // let mut classroom: ClassroomModel = ClassroomModel::new();
+
+        // for doc in cursor {
+        //     classroom = bson::from_bson(Bson::Document(doc))?;
+        // }
+
+        // //return data
+        // match classroom._id.to_string() == "".to_string() {
+        //     true => Err(FieldError::from("User not found")),
+        //     false => Ok(classroom.to_norm()),
+        // }
     }
 
-    // pub async fn class_rooms(&self, ctx: &Context<'_>) -> FieldResult<Vec<ClassroomGQL>> {
-    //     let db = ctx.data_unchecked::<AppContext>().db_pool.clone();
-    //     let collection = db.database("rusttest").collection("classrooms");
-    // }
+    pub async fn class_rooms(&self, ctx: &Context<'_>) -> FieldResult<Vec<ClassroomGQL>> {
+        let db = ctx.data_unchecked::<AppContext>().db_pool.clone();
+        let collection = db.database("rusttest").collection("classrooms");
+
+        let mut cursor = collection
+            .find(None, None)
+            .await
+            .expect("Error getting list of projects");
+        let mut data: Vec<ClassroomGQL> = Vec::new();
+
+        // Iterate over the results of the cursor.
+        while let Some(result) = cursor.next().await {
+            match result {
+                Ok(document) => {
+                    let u: ClassroomModel = bson::from_bson(Bson::Document(document))?;
+
+                    data.push(u.to_norm());
+                }
+                Err(e) => return Err(e.into()),
+            }
+        }
+        Ok(data)
+    }
 }
